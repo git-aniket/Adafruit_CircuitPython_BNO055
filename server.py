@@ -1,40 +1,24 @@
-# first of all import the socket library 
-import socket			 
+import socket
+import time
 
-# next create a socket object 
-s = socket.socket()		 
-print ("Socket successfully created")
+# Set the IP address and port of the server
+host = '192.168.2.27' # The ip address of the PC you want to send data to
+port = 12345
 
-# reserve a port on your computer in our 
-# case it is 12345 but it can be anything 
-port = 12345			
+# Create a socket object
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Next bind to the port 
-# we have not typed any ip in the ip field 
-# instead we have inputted an empty string 
-# this makes the server listen to requests 
-# coming from other computers on the network 
-s.bind(('', port))		 
-print ("socket binded to %s" %(port)) 
+# Connect to the server
+client_socket.connect((host, port))
+print(f"Connected to {host}:{port}")
 
-# put the socket into listening mode 
-s.listen(5)	 
-print ("socket is listening")		 
+try:
+    while True:
+        # Send data to the server
+        message = "Hello from Raspberry Pi!"
+        client_socket.sendall(message.encode('utf-8'))
+        time.sleep(1)  # Send data every 1 second
 
-# a forever loop until we interrupt it or 
-# an error occurs 
-while True: 
-
-    # Establish connection with client. 
-    c, addr = s.accept()	 
-    print ('Got connection from', addr )
-
-    # send a thank you message to the client. encoding to send byte type. 
-    c.send('Thank you for connecting'.encode()) 
-
-    # Close the connection with the client 
-    c.close()
-
-    # Breaking once connection closed
-    break
-
+finally:
+    # Close the connection
+    client_socket.close()
