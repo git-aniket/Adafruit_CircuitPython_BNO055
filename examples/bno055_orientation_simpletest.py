@@ -1,3 +1,7 @@
+"""
+Script to create a socket and send data from IMU to PC over 
+socket connection
+"""
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
 
@@ -7,11 +11,12 @@ import board
 import socket
 import adafruit_bno055
 from typing import Final
+import sys
 
-FREQUENCY:Final = 100 #Hz
+FREQUENCY:Final = 1000 #Hz
 
-# Set the IP address and port of the server
-host = '192.168.2.27'
+# Set the IP address and port of the client
+host = '192.168.2.3'
 port = 12345
 
 # Create a socket object
@@ -25,39 +30,21 @@ sensor = adafruit_bno055.BNO055_I2C(i2c)
 client_socket.connect((host, port))
 print(f"Connected to {host}:{port}")
 
-try:
-    while True:
-        # Send data to the server
-        data_string=str(format(sensor.acceleration)) 
-        #+ str(format(sensor.magnetic)) + str(format(sensor.gyro)) + str(format(sensor.quaternion)) + str(format(sensor.euler)) + str( format(sensor.gravity))
-        #message = "Hello from Raspberry Pi!"
-        client_socket.sendall(data_string.encode('utf-8'))
-        time.sleep(1/FREQUENCY)  # Send data every changed frequency 
+def send_data():
+    try:
+        while True:
+            # Send data to the server
+            data_string=str(format(sensor.acceleration)) + str(format(sensor.magnetic)) + str(format(sensor.gyro)) + str(format(sensor.quaternion)) + str(format(sensor.euler)) + str( format(sensor.gravity))
+            client_socket.sendall(data_string.encode('utf-8'))
+            time.sleep(1/FREQUENCY)  # Send data according to Frequency
 
-finally:
-    # Close the connection
-    client_socket.close()
+    finally:
+        # Close the connection
+        client_socket.close()
 
+send_data_thread=threading.Thread(target=send_data)
+send_data_thread.start()
+send_data_thread.join()
 
-
-## Attempt at making this program multithreaded
-# def print_numbers():
-#     for i in range(10):
-#         time.sleep(1)
-#         print(i)
-
-# def print_letters():
-#     for letter in 'abcdefghij':
-#         time.sleep(1)
-#         print(letter)
-    
-# t1=threading.Thread(target=print_numbers)
-# t2=threading.Thread(target=print_letters)
-
-# t1.start()
-# t2.start()
-
-# t1.join()
-# t2.join()
-
-#print("Execution Finished")
+print("Exiting")
+sys.exit(0)
